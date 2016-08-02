@@ -1,0 +1,13 @@
+---
+
+ruby_symlinks:
+  - bundle
+  - gem
+  - irb
+  - rake
+  - rdoc
+  - ri
+  - ruby
+
+ruby_executable: "{{ ruby_location }}/bin/ruby"
+gem_executable: "{{ ruby_location }}/bin/gem"

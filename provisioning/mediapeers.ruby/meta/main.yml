@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  author: Stefan Horning <horning@mediapeers.com>
+  description: "Installs ruby from source in given version"
+  company: Mediapeers
+  license: MIT
+  min_ansible_version: 1.4
+  platforms:
+  - name: Ubuntu
+    versions:
+    - trusty
+  categories:
+  - development
+  - system
+  - language:ruby
+dependencies: []

@@ -1,0 +1,79 @@
+---
+# Install the given ruby edition in the given version using ruby-install for most of the process
+# which takes care of all the things needed behind the scenes.
+# Additional this play also installs bundler and does the symlinking.
+
+- name: Output ruby edition and version to be installed
+  debug:
+    msg: "{{ruby_edition}} - {{ruby_version}}"
+
+- name: Add apt repositories for ruby dependencies
+  apt_repository: repo={{ item }} state=present update_cache=yes
+  with_items: ruby_deps_apt_repos
+
+- name: Ensure all dependencies are met to run the ruby-install tool without problems
+  become: true
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - wget
+    - bzip2
+    - tar
+    - patch
+
+- name: Install given ruby version from source using ruby-install
+  command: ruby-install {{ruby_edition}} {{ruby_version}} --install-dir {{ruby_location}} --cleanup --no-reinstall
+  args:
+    creates: "{{ruby_executable}}"
+  when: ruby_edition != 'jruby'
+
+# --- Jruby special treament ---
+# Accept Java license in case Oracle Java is being used
+- name: Accept Oracle license prior JDK installation
+  shell: echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections; echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections creates=/usr/lib/jvm/java-8-oracle
+  when: ruby_edition == 'jruby' and jruby_jre_package|match('oracle')
+
+# ruby-install is installing full java (not just headless-jre).
+# This includes also GUI and sound packages which are nont needed to run ruby and a liability
+# when installing on a server. See https://github.com/postmodern/ruby-install/pull/131
+# This role thus alows selecting your own java package, this is also handy if you want another
+# java edition (such as oracle java)
+
+- name: Install Jruby dependencies (Java) manually as the ruby-install would do too much
+  apt: name={{jruby_jre_package}} state=present
+  when: ruby_edition == 'jruby'
+
+# Workaround for https://github.com/jruby/jruby/issues/3285 for jruby versions > 1.7.21
+- name: Install Jruby dependency (libc6-dev) to fix a problem with libcrypt which is otherwise not found by jrubies gem command
+  apt: name=libc6-dev state=present
+  when: ruby_edition == 'jruby'
+
+- name: Install given jruby version from source using ruby-install (for jruby we need to disable dependency install to not create a mess)
+  command: ruby-install {{ruby_edition}} {{ruby_version}} --install-dir {{rubies_dir}} --cleanup --no-install-deps --no-reinstall
+  args:
+    creates: "{{ruby_executable}}"
+  when: ruby_edition == 'jruby'
+# --- end of Jruby special treament ---
+
+- name: Install Bundler
+  shell: "{{ gem_executable }} install bundler {{ ruby_bundler_flags }} creates={{ ruby_location }}/bin/bundle"
+
+- name: Install other system gems
+  shell: "{{ gem_executable }} install {{ item }}"
+  with_items: "{{ ruby_system_gems }}"
+
+- name: Get all files in ruby bin directory
+  find:
+    paths: "{{ ruby_location }}/bin/"
+    patterns: '*'
+    file_type: file
+  register: ruby_bin_files
+
+- name: Symlink all Ruby bins from /usr/local/bin
+  become: true
+  file:
+    path: "/usr/local/bin/{{ item.path.split('/')|last }}"
+    src: "{{ item.path }}"
+    state: link
+  with_items: ruby_bin_files.files

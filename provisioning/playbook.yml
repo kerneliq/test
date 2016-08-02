@@ -1,0 +1,35 @@
+--- 
+- 
+  become: true
+  gather_facts: true
+  hosts: all
+  roles: 
+    - 
+      role: mediapeers.ruby
+      ruby_version_string: "2.2.3"
+    -
+      role: redis
+  tasks:
+    - 
+      gem: "name=capistrano user_install=no state=present version=3.4.0"
+      name: "Install Capistrano"
+      sudo: true
+
+- hosts: stage.local
+  tasks:
+    -
+      apt: "name=sqlite update_cache=yes"
+    - lineinfile: dest=/etc/environment line="DATABASE_NAME=/var/devops/stage.sqlite"
+    - lineinfile: dest=/etc/environment line="DATABASE_HOST=localhost"
+    - lineinfile: dest=/etc/environment line="DATABASE_USER=devops"
+    - lineinfile: dest=/etc/environment line="DATABASE_PASSWORD=mypassword"
+- hosts: production.local
+  tasks:
+    -
+      apt: "name=postgresql update_cache=yes"
+    -
+      shell: sudo sed -i 's/^local\s\+all\s\+all\s\+peer/local all all trust/g' /etc/postgresql/9.3/main/pg_hba.conf
+    - lineinfile: dest=/etc/environment line="DATABASE_NAME=devops_production"
+    - lineinfile: dest=/etc/environment line="DATABASE_HOST=localhost"
+    - lineinfile: dest=/etc/environment line="DATABASE_USER=devops"
+    - lineinfile: dest=/etc/environment line="DATABASE_PASSWORD=<null>"
