@@ -20,7 +20,7 @@
       role: sqlite
 
   tasks:
-    - lineinfile: dest=/etc/environment line={{ stage.env }}
+    - lineinfile: dest=/etc/environment line={{ env }}
 
 - hosts: production.local
   roles:
@@ -28,4 +28,4 @@
       role: postgresql
 
   tasks:
-    - lineinfile: dest=/etc/environment line={{ prod.env }}
+    - lineinfile: dest=/etc/environment line={{ env }}
