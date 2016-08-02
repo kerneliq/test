@@ -1,4 +1,4 @@
-stage.env: "DATABASE_NAME=/var/devops/stage.sqlite
+env: "DATABASE_NAME=/var/devops/stage.sqlite
 DATABASE_HOST=localhost
 DATABASE_USER=devops
 DATABASE_PASSWORD=mypassword"
