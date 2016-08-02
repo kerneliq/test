@@ -1,0 +1,4 @@
+prod.env: "DATABASE_NAME=devops_production
+DATABASE_HOST=localhost
+DATABASE_USER=devops
+DATABASE_PASSWORD=<null>"

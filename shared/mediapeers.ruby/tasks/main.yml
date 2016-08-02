@@ -1,0 +1,15 @@
+---
+# Main tasks file for the mediapeers.ruby role
+
+- name: Ensure make is installed (needed to install ruby_install)
+  become: true
+  apt:
+    name: make
+    state: present
+    update_cache: yes
+
+# Installs the ruby-install tool:
+- include: ruby_install.yml
+
+# Installs ruby itself (from source):
+- include: ruby.yml

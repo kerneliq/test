@@ -1,0 +1,21 @@
+# mediapeers.ruby defaults
+
+ruby_version_string: 2.2.3 # can also contain the ruby edition separated with a dash such as jruby-1.7, wihout it it defaults to mri
+
+contains_edition: '{{ruby_version_string|match(".*-.+")}}'
+ruby_version: "{% if contains_edition|bool %}{{ ruby_version_string.split('-')[1] }}{% else %}{{ruby_version_string}}{% endif %}"
+ruby_edition: "{% if contains_edition|bool %}{{ ruby_version_string.split('-')[0] }}{% else %}ruby{% endif %}"
+
+ruby_install_version: '0.6.0'
+rubies_dir: /opt/rubies
+ruby_location: "{{rubies_dir}}/{{ruby_edition}}-{{ruby_version}}"
+
+ruby_deps_apt_repos: []
+  #  - 'ppa:webupd8team/java'
+
+jruby_jre_package: openjdk-7-jre-headless # oracle-java8-installer
+
+ruby_bundler_flags: ""
+
+# Define additional gems to be installed and linked
+ruby_system_gems: []

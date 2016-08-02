@@ -1,0 +1,31 @@
+--- 
+- 
+  hosts: all
+  become: true
+  gather_facts: true
+  
+  roles: 
+    - 
+      role: mediapeers.ruby
+    -
+      role: redis
+  tasks:
+    - 
+      gem: "name=capistrano user_install=no state=present version=3.4.0"
+      name: "Install Capistrano"
+
+- hosts: stage.local
+  roles:
+    -
+      role: sqlite
+
+  tasks:
+    - lineinfile: dest=/etc/environment line={{ stage.env }}
+
+- hosts: production.local
+  roles:
+    -
+      role: postgresql
+
+  tasks:
+    - lineinfile: dest=/etc/environment line={{ prod.env }}

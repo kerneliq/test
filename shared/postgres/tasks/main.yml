@@ -1,0 +1,6 @@
+- hosts: all
+  tasks:
+    -
+      apt: "name=postgresql update_cache=yes"
+    -
+      shell: sudo sed -i 's/^local\s\+all\s\+all\s\+peer/local all all trust/g' /etc/postgresql/9.3/main/pg_hba.conf

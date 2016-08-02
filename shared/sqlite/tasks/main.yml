@@ -1,0 +1,5 @@
+- hosts: all
+  tasks:
+    -
+      apt: "name=sqlite update_cache=yes"
+

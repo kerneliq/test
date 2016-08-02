@@ -1,0 +1,45 @@
+---
+sudo: required
+dist: trusty
+
+language: python
+python: "2.7"
+
+env:
+  - SITE=test.yml
+
+before_install:
+  - sudo apt-get update -qq
+
+  # Delete rubieis
+  - sudo rm /usr/bin/ruby /usr/bin/gem
+  - rvm implode --force
+  - sudo rm -r /usr/local/rvm/
+
+install:
+  # Install Ansible.
+  - pip install ansible
+  - ansible --version
+
+  # Add ansible.cfg to pick up roles path.
+  - "{ echo '[defaults]'; echo 'roles_path = ../'; } >> ansible.cfg"
+
+script:
+  # Check the role/playbook's syntax.
+  - "ansible-playbook -i tests/inventory tests/$SITE --syntax-check"
+
+  # Run the role/playbook with ansible-playbook.
+  - "ansible-playbook -i tests/inventory tests/$SITE --connection=local"
+
+  # Run the role/playbook again, checking to make sure it's idempotent.
+  # Allowing 1 'change' here as those are only reading state not changing anything.
+  - >
+    ansible-playbook -i tests/inventory tests/$SITE --connection=local
+    | grep -q 'changed=1.*failed=0'
+    && (echo 'Idempotence test: pass' && exit 0)
+    || (echo 'Idempotence test: fail' && exit 1)
+
+  - sudo ruby -v
+  # Installung & running serverspec (using ruby installed by role)
+  - sudo gem install serverspec
+  - sudo rake spec
