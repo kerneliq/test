@@ -13,7 +13,7 @@
     - 
       gem: "name=capistrano user_install=no state=present version=3.4.0"
       name: "Install Capistrano"
-      sudo: true
+      
 
 - hosts: stage.local
   tasks:
